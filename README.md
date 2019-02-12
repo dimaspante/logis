@@ -6,7 +6,7 @@ O Logis aceita inicializar através de um array, com as seguintes opções:
 
 "origem" (Inteiro) - O cep de origem (empresa)
 
-"peso" (Decimal) - O peso somado dos itens (em kg)
+"peso" (Decimal) - O peso somado dos itens (em kg - correios retorna até 30kg)
 
 "itens" (Inteiro) - O número total de itens
 
@@ -34,7 +34,7 @@ use Logis\Logis;
 $options = [
 	'destino' => '38402100',
 	'origem' => '97957000',
-	'peso' => '120',
+	'peso' => '20',
 	'itens' => '4',
 	'dimensoes' => [
 		'altura' => '0.4',
@@ -46,12 +46,17 @@ $options = [
 //abertura da API
 $logis = new Logis($options);
 
-//calcula o peso cubado a partir dos dados
-$peso_cubado = $logis->calcularCubagem();
+//incializa o array de valores
+$valores = array();
 
-//retorna o valor final que vem do banco
-$valor_final = $logis->freteCubado($peso_cubado);
+//retorna o valor e o prazo dos Correios (webservice)
+$valores[] = $logis->calcularCorreios();
+
+//retorna o valor e o prazo das transportadoras (interno)
+$valores[] = $logis->calcularCubagem();
 
 //debug
-echo "<pre>" . $valor_final . "</pre>";
+echo "<pre>";
+print_r($valores);
+echo "</pre>";
 ```
