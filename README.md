@@ -12,12 +12,14 @@ O Logis aceita inicializar através de um array, com as seguintes opções:
 
 "dimensões" (Array):
 
-	"altura" (Decimal) - A altura somada dos itens (em cm)
+	"altura" (Decimal) - A altura somada dos itens (em m)
 	
-	"largura" (Decimal) - A largura/espessura somada dos itens (em cm)
+	"largura" (Decimal) - A largura/espessura somada dos itens (em m)
 	
-	"comprimento" (Decimal) - O comprimento/profundidade somado dos itens (em cm)
-	
+	"comprimento" (Decimal) - O comprimento/profundidade somado dos itens (em m)
+
+O retorno é o valor em reais.
+
 ## EXEMPLO
 
 ```php
@@ -35,9 +37,9 @@ $options = [
 	'peso' => '120',
 	'itens' => '4',
 	'dimensoes' => [
-		'altura' => '40',
-		'largura' => '50',
-		'comprimento' => '80'
+		'altura' => '0.4',
+		'largura' => '0.5',
+		'comprimento' => '0.8'
 	]
 ];
 

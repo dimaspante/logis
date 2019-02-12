@@ -12,9 +12,9 @@ $options = [
 	'peso' => '120',
 	'itens' => '4',
 	'dimensoes' => [
-		'altura' => '40',
-		'largura' => '50',
-		'comprimento' => '80'
+		'altura' => '0.4',
+		'largura' => '0.5',
+		'comprimento' => '0.8'
 	]
 ];
 

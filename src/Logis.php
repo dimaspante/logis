@@ -43,10 +43,6 @@ class Logis
 			$this->logError('Peso total não informado.');
 			return false;
 		}
-		if (!$itens) {
-			$this->logError('Total de itens não informado.');
-			return false;
-		}
 		if (!$dimensoes) {
 			$this->logError('Dimensões não informadas.');
 			return false;
@@ -69,27 +65,54 @@ class Logis
     	return $cubagem;
 	}
 
-	public function logError($message,$log=null) {
+	public function logError($message, $log=null) {
 		echo '<pre>[ ! ] '.$message.'</pre>';
 		if($log) error_log($message." - ".$log);
 	}
 
-	public function calcularCubagem(){
+	public function calcularCubagem() {
 		$data = $this->dimensoes;
+
+		if (!$data['altura']) {
+			$this->logError('Dimensões: altura não informada.');
+			return false;
+		}
+		if (!$data['largura']) {
+			$this->logError('Dimensões: largura não informada.');
+			return false;
+		}
+		if (!$data['comprimento']) {
+			$this->logError('Dimensões: comprimento não informado.');
+			return false;
+		}
 
 		$altura = str_replace(',', '.', $data['altura']);
 		$largura = str_replace(',', '.', $data['largura']);
 		$comprimento = str_replace(',', '.', $data['comprimento']);
 
-		$m3 = $altura * $largura * $comprimento;
+		$cubagem = $altura * $largura * $comprimento;
+		if ($this->itens) $cubagem *= $this->itens;
 
-		$cubagem = $m3 * $this->itens * $this->densidade;
+		/**
+		 * calcula a densidade do pacote (inativo)
+		 * 
+		 * $densidade = 0;
+		 * 
+		 * if ($this->densidade) {
+		 * 	$densidade = $cubagem * $this->densidade;
+		 * }
+		*/
 
-		return ($cubagem) ? $this->freteCubado($cubagem) : $this->logError('Peso cubado não pode ser calculado ('.$cubagem.').');
+		if ($cubagem) {
+			return $this->freteCubado($cubagem);
+		} else {
+			$this->logError('Peso cubado não pode ser calculado ('.$cubagem.').');
+			return false;
+		}
 	}
 
-	public function freteCubado($peso_cubado){
-		if(!$peso_cubado) return;
+	public function freteCubado($peso_cubado) {
+		if (!$peso_cubado) return;
 
 		return $peso_cubado;
 
