@@ -1,17 +1,24 @@
-#OPÇÕES
+## OPÇÕES
 
 O Logis aceita inicializar através de um array, com as seguintes opções:
 
-"destino" [Inteiro] - O cep de destino (cliente)
-"origem" [Inteiro] - O cep de origem (empresa)
-"peso" [Decimal] - O peso somado dos itens (em kg)
-"itens" [Inteiro] - O número total de itens
-"dimensões" [Array]:
-	"altura" [Decimal] - A altura somada dos itens (em cm)
-	"largura" [Decimal] - A largura/espessura somada dos itens (em cm)
-	"comprimento" [Decimal] - O comprimento/profundidade somado dos itens (em cm)
+"destino" (Inteiro) - O cep de destino (cliente)
 
-#EXEMPLO
+"origem" (Inteiro) - O cep de origem (empresa)
+
+"peso" (Decimal) - O peso somado dos itens (em kg)
+
+"itens" (Inteiro) - O número total de itens
+
+"dimensões" (Array):
+
+	"altura" (Decimal) - A altura somada dos itens (em cm)
+	
+	"largura" (Decimal) - A largura/espessura somada dos itens (em cm)
+	
+	"comprimento" (Decimal) - O comprimento/profundidade somado dos itens (em cm)
+	
+## EXEMPLO
 
 ```php
 <?php
