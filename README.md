@@ -21,7 +21,7 @@ O retorno é um (array) com os dados:
 - servico (string) O nome da transportadora ou da modalidade (no caso de Correios)
 - preco (float) O valor total para cada serviço
 - prazo (int) O prazo em dias previsto para a entrega
-- mensagem (string) Uma mensagem referente ao resultado (erro no caso de CEP fora de área de cobertura)
+- mensagem (string) Uma mensagem referente ao resultado (em caso de erro, retorna nulo - Correios idem)
 
 ## EXEMPLO
 
@@ -76,7 +76,7 @@ Array
                     [servico] => PAC
                     [preco] => 217.8
                     [prazo] => 13
-                    [mensagem] => 
+                    [mensagem] => null
                 )
 
             [1] => Array
@@ -84,7 +84,7 @@ Array
                     [servico] => SEDEX
                     [preco] => 441.1
                     [prazo] => 7
-                    [mensagem] => 
+                    [mensagem] => null
                 )
 
         )
@@ -96,7 +96,7 @@ Array
                     [servico] => Vipex
                     [preco] => 0
                     [prazo] => 0
-                    [mensagem] => Seu CEP está fora da área de entrega. Solicite seu orçamento por e-mail.
+                    [mensagem] => null
                 )
 
         )

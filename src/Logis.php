@@ -154,7 +154,7 @@ class Logis
 		    		'servico' => (string)($srv->Codigo == '40010' ? 'SEDEX' : 'PAC'),
 		    		'preco' => (float)($srv->Valor+(0.1*$srv->Valor)), //valor mais 10%
 		    		'prazo' => (int)$srv->PrazoEntrega,
-		    		'mensagem' => ''
+		    		'mensagem' => null
 		    	];
 		    }
 		}
@@ -186,7 +186,7 @@ class Logis
 				try {
 					//busca a praca de destino de acordo com o cep, em cada transportadora
 					
-					$stmt = $this->bd->prepare("SELECT p.id_praca, p.nome_cidade, p.uf_cidade, p.valor_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.id_praca = v.id_praca WHERE p.cep_inicial >= :c AND p.cep_final <= :c AND p.id_transportadora = :t LIMIT 1");
+					$stmt = $this->bd->prepare("SELECT p.id_praca, p.nome_cidade, p.uf_cidade, p.cobra_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.id_praca = v.id_praca WHERE p.cep_inicial >= :c AND p.cep_final <= :c AND p.id_transportadora = :t LIMIT 1");
 					$stmt->bindParam(":c", $this->destino);
 					$stmt->bindParam(":t", $raw['id_transportadora']);
 					$stmt->execute();
@@ -197,10 +197,14 @@ class Logis
 				if ($stmt->fetchColumn() > 0) {
 					while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 						$valor = $row['valor'];
-						if ($row['valor_adicional']) $valor += $row['valor_adicional'];
-
-						//adiciona 10% no valor
-						$valor += (0.1*$valor);
+						/*
+						 * Se "cobra_adicional" for true (1), existe uma
+						 * Taxa de Restrição de Trânsito (TRT),
+						 * que deve adicionar 25% no total do frete
+						 */
+						if ($row['cobra_adicional']){
+							$valor += (0.25 * $valor);
+						}
 
 						$retorno[] = [
 				    		'servico' => (string)$raw['nome_transportadora'],
@@ -214,7 +218,7 @@ class Logis
 						'servico' => (string)$raw['nome_transportadora'],
 						'preco' => 0,
 						'prazo' => 0,
-						'mensagem' => 'Seu CEP está fora da área de entrega. Solicite seu orçamento por e-mail.',
+						'mensagem' => null,
 					];
 				}
 			}
