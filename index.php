@@ -7,7 +7,7 @@ use Logis\Logis;
 
 //opções de inicialização
 $options = [
-	'destino' => '38402100',
+	'destino' => '96810178',
 	'origem' => '97957000',
 	'peso' => '20',
 	'itens' => '4',
@@ -21,14 +21,8 @@ $options = [
 //abertura da API
 $logis = new Logis($options);
 
-//incializa o array de valores
-$valores = array();
-
-//retorna o valor e o prazo dos Correios (webservice)
-$valores[] = $logis->calcularCorreios();
-
-//retorna o valor e o prazo das transportadoras (interno)
-$valores[] = $logis->calcularTransportadoras();
+//retorna os dados em formato de array (serviço, valor, prazo, mensagem)
+$valores = $logis->calcularFrete();
 
 //debug
 echo "<pre>";

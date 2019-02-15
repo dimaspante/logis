@@ -21,7 +21,7 @@ O retorno é um (array) com os dados:
 - servico (string) O nome da transportadora ou da modalidade (no caso de Correios)
 - preco (float) O valor total para cada serviço
 - prazo (int) O prazo em dias previsto para a entrega
-- mensagem (string) Uma mensagem referente ao resultado (em caso de erro, retorna nulo - Correios idem)
+- mensagem (string) Uma mensagem referente ao resultado (em caso de erro, retorna null)
 
 ## EXEMPLO
 
@@ -35,7 +35,7 @@ use Logis\Logis;
 
 //opções de inicialização
 $options = [
-	'destino' => '38402100',
+	'destino' => '96810178',
 	'origem' => '97957000',
 	'peso' => '20',
 	'itens' => '4',
@@ -49,14 +49,8 @@ $options = [
 //abertura da API
 $logis = new Logis($options);
 
-//incializa o array de valores
-$valores = array();
-
-//retorna o valor e o prazo dos Correios (webservice)
-$valores[] = $logis->calcularCorreios();
-
-//retorna o valor e o prazo das transportadoras (interno)
-$valores[] = $logis->calcularCubagem();
+//retorna os dados em formato de array (serviço, valor, prazo, mensagem)
+$valores = $logis->calcularFrete();
 
 //debug
 echo "<pre>";
@@ -71,34 +65,26 @@ Array
 (
     [0] => Array
         (
-            [0] => Array
-                (
-                    [servico] => PAC
-                    [preco] => 217.8
-                    [prazo] => 13
-                    [mensagem] => null
-                )
-
-            [1] => Array
-                (
-                    [servico] => SEDEX
-                    [preco] => 441.1
-                    [prazo] => 7
-                    [mensagem] => null
-                )
-
+            [servico] => CORREIOS - PAC
+            [preco] => 102.3
+            [prazo] => 5
+            [mensagem] => 
         )
 
     [1] => Array
         (
-            [0] => Array
-                (
-                    [servico] => Vipex
-                    [preco] => 0
-                    [prazo] => 0
-                    [mensagem] => null
-                )
+            [servico] => CORREIOS - SEDEX
+            [preco] => 126.5
+            [prazo] => 2
+            [mensagem] => 
+        )
 
+    [2] => Array
+        (
+            [servico] => Vipex
+            [preco] => 37.14
+            [prazo] => 3
+            [mensagem] => Frete para Santa Cruz do Sul/RS
         )
 
 )
