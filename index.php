@@ -28,7 +28,7 @@ $valores = array();
 $valores[] = $logis->calcularCorreios();
 
 //retorna o valor e o prazo das transportadoras (interno)
-$valores[] = $logis->calcularCubagem();
+$valores[] = $logis->calcularTransportadoras();
 
 //debug
 echo "<pre>";

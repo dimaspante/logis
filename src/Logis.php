@@ -70,8 +70,8 @@ class Logis
 	 */
 	private function conectaBD(){
 		$host = 'mysql.decorarminhacasa.com.br';
-		$name = 'decorarminhaca01';
-		$user = 'decorarminhaca01';
+		$name = 'decorarminhaca';
+		$user = 'decorarminhaca';
 		$pass = 'D3C0rar';
 
 		try {
@@ -113,11 +113,7 @@ class Logis
 	public function calcularCorreios() {
 		if ($this->peso > 30) return; //o limite dos correios é 30kg
 
-		$usa_curl = false; //curl ou simplexml_load_file (curl se mostrou ao menos 3s mais lento)
-
 		$data = $this->analisaDimensoes();
-
-		$cubagem = $data['a'] * $data['l'] * $data['c'];
 
 		$altura 	 = ($data['a'] < 12) ? 12 : $data['a']; //o minimo dos correios é 12cm
 		$largura 	 = ($data['l'] < 12) ? 12 : $data['l']; //o minimo dos correios é 12cm
@@ -148,21 +144,14 @@ class Logis
 		$qry['StrRetorno'] = 'xml';
 		$qry = http_build_query($qry);
 
-	    $retorno = array();
+	    $result = simplexml_load_file($url . '?' . $qry);
 
-	    if($usa_curl){
-		    $curl = curl_init($url . '?' . $qry);
-			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			$dados = curl_exec($curl);
-			$result = simplexml_load_string($dados);
-		}else{
- 			$result = simplexml_load_file($url . '?' . $qry);
- 		}
+	    $retorno = array();
 	    
 	    foreach ($result->cServico as $srv) {
 		    if($srv->Erro == 0){
 		    	$retorno[] = [
-		    		'servico' => ($srv->Codigo == '40010' ? 'SEDEX' : 'PAC'),
+		    		'servico' => (string)($srv->Codigo == '40010' ? 'SEDEX' : 'PAC'),
 		    		'preco' => (float)($srv->Valor+(0.1*$srv->Valor)), //valor mais 10%
 		    		'prazo' => (int)$srv->PrazoEntrega,
 		    		'mensagem' => ''
@@ -174,9 +163,9 @@ class Logis
 	}
 
 	/**
-	 * Cálculo usando o banco local (transportadoras)
+	 * Cálculo usando o banco local de transportadoras
 	 */
-	public function calcularCubagem() {
+	public function calcularTransportadoras() {
 		$data = $this->analisaDimensoes();
 
 		$cubagem = $data['a'] * $data['l'] * $data['c'];
@@ -187,34 +176,46 @@ class Logis
 
 			//busca as transportadoras existentes
 			try {
-				$stmt = $this->bd->prepare("SELECT id_transportadora, nome_transportadora FROM transportadoras");
+				$stmt = $this->bd->prepare("SELECT id_transportadora, nome_transportadora FROM logis_transportadora");
 				$stmt->execute();
-			} catch(PDOException $e) {
+			} catch (PDOException $e) {
 				$this->logaErro("Erro ao buscar transportadoras: " . $e->getMessage());
 			}
 
-			while($raw = $stmt->fetch(PDO::FETCH_ASSOC)){
-				//busca a praca de destino de acordo com o cep, em cada transportadora
+			while ($raw = $stmt->fetch(PDO::FETCH_ASSOC)) {
 				try {
-					$stmt = $this->bd->prepare("SELECT p.id_praca, p.nome_cidade, p.uf_cidade, p.valor_adicional, p.prazo, v.valor FROM pracas p INNER JOIN valores v ON p.id_praca = v.id_praca WHERE p.cep_inicial >= :c AND p.cep_final <= :c AND p.id_transportadora = :t LIMIT 1");
+					//busca a praca de destino de acordo com o cep, em cada transportadora
+					
+					$stmt = $this->bd->prepare("SELECT p.id_praca, p.nome_cidade, p.uf_cidade, p.valor_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.id_praca = v.id_praca WHERE p.cep_inicial >= :c AND p.cep_final <= :c AND p.id_transportadora = :t LIMIT 1");
 					$stmt->bindParam(":c", $this->destino);
 					$stmt->bindParam(":t", $raw['id_transportadora']);
 					$stmt->execute();
-				} catch(PDOException $e) {
+				} catch (PDOException $e) {
 					$this->logaErro("Erro ao buscar valores: " . $e->getMessage());
 				}
 
-				while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-					//calcula os valores mais 10%
-					$valor = $row['valor']+(0.1*$row['valor']);
-					if($row['valor_adicional']) $valor += $row['valor_adicional'];
+				if ($row->fetchColumn() > 0) {
+					while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+						$valor = $row['valor'];
+						if ($row['valor_adicional']) $valor += $row['valor_adicional'];
 
+						//adiciona 10% no valor
+						$valor += (0.1*$valor);
+
+						$retorno[] = [
+				    		'servico' => (string)$raw['nome_transportadora'],
+				    		'preco' => (float)$valor,
+				    		'prazo' => (int)$row['prazo'],
+				    		'mensagem' => 'Frete para ' . $row['nome_cidade'] . '/' . $row['uf_cidade']
+				    	];
+					}
+				} else {
 					$retorno[] = [
-			    		'servico' => $raw['nome_transportadora'],
-			    		'preco' => (float)$valor,
-			    		'prazo' => (int)$row['prazo'],
-			    		'mensagem' => 'Frete para ' . $row['nome_cidade'] . '/' . $row['uf_cidade']
-			    	];
+						'servico' => (string)$raw['nome_transportadora'],
+						'preco' => 0,
+						'prazo' => 0,
+						'mensagem' => 'Seu CEP está fora da área de entrega. Solicite seu orçamento por e-mail.',
+					];
 				}
 			}
 

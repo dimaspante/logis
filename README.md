@@ -2,23 +2,26 @@
 
 O Logis aceita inicializar através de um array, com as seguintes opções:
 
-"destino" (Inteiro) - O cep de destino (cliente)
+*destino* (int) O cep de destino (cliente)
 
-"origem" (Inteiro) - O cep de origem (empresa)
+*origem* (int) O cep de origem (empresa)
 
-"peso" (Decimal) - O peso somado dos itens (em kg - correios retorna até 30kg)
+*peso* (float) O peso somado dos itens (em kg - correios retorna até 30kg)
 
-"itens" (Inteiro) - O número total de itens
+*itens* (int) O número total de itens, opcional
 
-"dimensões" (Array):
+*dimensões* (array):
 
-	"altura" (Decimal) - A altura somada dos itens (em m)
-	
-	"largura" (Decimal) - A largura/espessura somada dos itens (em m)
-	
-	"comprimento" (Decimal) - O comprimento/profundidade somado dos itens (em m)
+	- altura (float) A altura somada dos itens (em m)
+	- largura (float) A largura/espessura somada dos itens (em m)
+	- comprimento (float) O comprimento/profundidade somado dos itens (em m)
 
-O retorno é o valor em reais.
+O retorno é um (array) com os dados:
+
+	- servico (string) O nome da transportadora ou da modalidade (no caso de Correios)
+	- preco (float) O valor total para cada serviço
+	- prazo (int) O prazo em dias previsto para a entrega
+	- mensagem (string) Uma mensagem referente ao resultado (erro no caso de CEP fora de área de cobertura)
 
 ## EXEMPLO
 
