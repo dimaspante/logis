@@ -2,26 +2,26 @@
 
 O Logis aceita inicializar através de um array, com as seguintes opções:
 
-*destino* (int) O cep de destino (cliente)
+**destino** (int) O cep de destino (cliente)
 
-*origem* (int) O cep de origem (empresa)
+**origem** (int) O cep de origem (empresa)
 
-*peso* (float) O peso somado dos itens (em kg - correios retorna até 30kg)
+**peso** (float) O peso somado dos itens (em kg - correios retorna até 30kg)
 
-*itens* (int) O número total de itens, opcional
+**itens** (int) O número total de itens, opcional
 
-*dimensões* (array):
+**dimensões** (array):
 
-	- altura (float) A altura somada dos itens (em m)
-	- largura (float) A largura/espessura somada dos itens (em m)
-	- comprimento (float) O comprimento/profundidade somado dos itens (em m)
+- altura (float) A altura somada dos itens (em m)
+- largura (float) A largura/espessura somada dos itens (em m)
+- comprimento (float) O comprimento/profundidade somado dos itens (em m)
 
 O retorno é um (array) com os dados:
 
-	- servico (string) O nome da transportadora ou da modalidade (no caso de Correios)
-	- preco (float) O valor total para cada serviço
-	- prazo (int) O prazo em dias previsto para a entrega
-	- mensagem (string) Uma mensagem referente ao resultado (erro no caso de CEP fora de área de cobertura)
+- servico (string) O nome da transportadora ou da modalidade (no caso de Correios)
+- preco (float) O valor total para cada serviço
+- prazo (int) O prazo em dias previsto para a entrega
+- mensagem (string) Uma mensagem referente ao resultado (erro no caso de CEP fora de área de cobertura)
 
 ## EXEMPLO
 
@@ -62,4 +62,44 @@ $valores[] = $logis->calcularCubagem();
 echo "<pre>";
 print_r($valores);
 echo "</pre>";
+```
+
+## RETORNO
+
+```php
+Array
+(
+    [0] => Array
+        (
+            [0] => Array
+                (
+                    [servico] => PAC
+                    [preco] => 217.8
+                    [prazo] => 13
+                    [mensagem] => 
+                )
+
+            [1] => Array
+                (
+                    [servico] => SEDEX
+                    [preco] => 441.1
+                    [prazo] => 7
+                    [mensagem] => 
+                )
+
+        )
+
+    [1] => Array
+        (
+            [0] => Array
+                (
+                    [servico] => Vipex
+                    [preco] => 0
+                    [prazo] => 0
+                    [mensagem] => Seu CEP está fora da área de entrega. Solicite seu orçamento por e-mail.
+                )
+
+        )
+
+)
 ```

@@ -194,7 +194,7 @@ class Logis
 					$this->logaErro("Erro ao buscar valores: " . $e->getMessage());
 				}
 
-				if ($row->fetchColumn() > 0) {
+				if ($stmt->fetchColumn() > 0) {
 					while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 						$valor = $row['valor'];
 						if ($row['valor_adicional']) $valor += $row['valor_adicional'];
