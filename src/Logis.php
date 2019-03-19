@@ -207,23 +207,23 @@ class Logis
 			$funcao =>
 				array('in0' => 
 					array(
-						'cdDivisaoCliente'					=> '1',
-						'login' 							=> 'lojadecorar@gmail.com',
-						'senha' 							=> '',
-						'cepOrigem' 						=> '96822700',
-						'cepDestino' 						=> $this->destino,
-						'nrIdentifClienteRem' 				=> '10651777000170',
-						'nrInscricaoEstadualRemetente' 		=> '1080161969',
-						'nrIdentifClienteDest' 				=> '00433856050',
-						'nrInscricaoEstadualDestinatario' 	=> '',
-						'vlMercadoria' 						=> $this->valor,
-						'psReal' 							=> number_format($this->peso, 3, '.', ''),
-						'tpFrete' 							=> 'C',
-						'tpPessoaRemetente' 				=> 'J',
-						'tpSituacaoTributariaRemetente' 	=> 'CO',
-						'tpPessoaDestinatario' 				=> 'F',
-						'tpSituacaoTributariaDestinatario' 	=> 'NC',
-						'tpServico' 						=> 'RNC'
+						'cdDivisaoCliente'                 => '1',
+						'login'                            => 'lojadecorar@gmail.com',
+						'senha'                            => '',
+						'cepOrigem'                        => '96822700',
+						'cepDestino'                       => $this->destino,
+						'nrIdentifClienteRem'              => '10651777000170',
+						'nrInscricaoEstadualRemetente'     => '1080161969',
+						'nrIdentifClienteDest'             => '00433856050',
+						'nrInscricaoEstadualDestinatario'  => '',
+						'vlMercadoria'                     => $this->valor,
+						'psReal'                           => number_format($this->peso, 3, '.', ''),
+						'tpFrete'                          => 'C',
+						'tpPessoaRemetente'                => 'J',
+						'tpSituacaoTributariaRemetente'    => 'CO',
+						'tpPessoaDestinatario'             => 'F',
+						'tpSituacaoTributariaDestinatario' => 'NC',
+						'tpServico'                        => 'RNC'
 					)	
 				)
 		);
