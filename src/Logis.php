@@ -74,13 +74,10 @@ class Logis
 	 * Conexão ao banco com PDO
 	 */
 	private function conectaBD(){
-		$host = 'mysql.decorarminhacasa.com.br';
-		$name = 'decorarminhaca';
-		$user = 'decorarminhaca';
-		$pass = 'D3C0rar';
+		require_once 'defines.php'
 
 		try {
-			$pdo = new PDO("mysql:host=" . $host . ";dbname=" . $name, $user, $pass);
+			$pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
 			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 			return $pdo;
