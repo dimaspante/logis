@@ -24,6 +24,7 @@ class Logis
 	function __construct($options = array()) {
 		$destino = (int)$options['destino'];
 		$origem = (int)$options['origem'];
+		$valor = $options['valor'];
 		$peso = $options['peso'];
 		$itens = (int)$options['itens'];
 		$dimensoes = (array)$options['dimensoes'];
@@ -37,6 +38,9 @@ class Logis
 		if (!$origem) {
 			$this->logaErro('CEP de origem não informado.');
 		}
+		if (!$valor) {
+			$this->logaErro('Valor dos itens não informado.');
+		}
 		if (!$peso) {
 			$this->logaErro('Peso total não informado.');
 		}
@@ -49,6 +53,7 @@ class Logis
 
     	$this->destino = $destino;
     	$this->origem = $origem;
+    	$this->valor = $valor;
     	$this->peso = $peso;
     	$this->itens = $itens;
     	$this->dimensoes = $dimensoes;
@@ -123,7 +128,14 @@ class Logis
 
 		$retorno = array();
 
-		//busca o WS dos Correios (se for menos de 30kg)
+		/*************
+		 *
+		 * WS CORREIOS
+		 *
+		 * Somente calcula caso o peso total
+		 * seja menor que 30kg, usando XML
+		 * 
+		 *************/
 		if($this->peso < 30){
 			$altura 	 = ($data['a'] < 12) ? 12 : $data['a']; //o minimo é 12cm
 			$largura 	 = ($data['l'] < 12) ? 12 : $data['l']; //o minimo é 12cm
@@ -134,7 +146,6 @@ class Logis
 			if ($comprimento <= 105 && $largura <= 105) $servicos[] = 41106; //pac
 			if ($comprimento <= 60 && $largura <= 60) $servicos[] = 40010; //sedex
 
-			//cria o link do webservice
 			$url = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.aspx';
 
 			$qry['nCdServico'] = implode(',',$servicos);
@@ -159,7 +170,7 @@ class Logis
 		    foreach ($result->cServico as $srv) {
 			    if($srv->Erro == 0){
 			    	$retorno[] = [
-			    		'servico' => (string)($srv->Codigo == '40010' ? 'CORREIOS - SEDEX' : 'CORREIOS - PAC'),
+			    		'servico' => (string)($srv->Codigo == '40010' ? 'SEDEX' : 'PAC'),
 			    		'preco' => (float)($srv->Valor+(0.1*$srv->Valor)), //valor mais 10%
 			    		'prazo' => (int)$srv->PrazoEntrega,
 			    		'mensagem' => null
@@ -168,9 +179,99 @@ class Logis
 			}
 		}
 
-		//busca o WS da TNT
+		/*************
+		 *
+		 * WS TNT
+		 *
+		 * Utiliza SOAP 1.1
+		 * para buscar os dados
+		 * 
+		 * campo cepOrigem deve ser da própria filial da tnt, não da empresa
+		 * tpFrete deve ser C ou F (C - CIF, pago à TNT pelo remetente; F - FOB, pago no destino | Padrão C)
+		 * tpServico deve ser RNC ou ANC (RNC - Rodoviario Nacional Convencional; ANC - Aéreo Nacional | Padrão RNC)
+		 * tpSituacaoTributariaRemetente normalmente CO, ME ou NC (CO - Contribuinte; ME - Microempresa; NC - Não contribuinte | Padrão CO)
+		 * tpSituacaoTributariaDestinatario normalmente CO, ME ou NC (CO - Contribuinte; ME - Microempresa; NC - Não contribuinte | Padrão NC)
+		 * 
+		 *************/
+		$wsdlURL = 'http://ws.tntbrasil.com.br/servicos/CalculoFrete?wsdl';
 
-		//busca a base local
+		$cliente = new \SoapClient($wsdlURL, array(
+			'exceptions' => true,
+			'cache_wsdl' => WSDL_CACHE_NONE,
+			'trace' => true
+		));
+
+		$funcao = 'calculaFrete';
+
+		$parametros = array(
+			$funcao =>
+				array('in0' => 
+					array(
+						'cdDivisaoCliente'					=> '1',
+						'login' 							=> 'lojadecorar@gmail.com',
+						'senha' 							=> '',
+						'cepOrigem' 						=> '96822700',
+						'cepDestino' 						=> $this->destino,
+						'nrIdentifClienteRem' 				=> '10651777000170',
+						'nrInscricaoEstadualRemetente' 		=> '1080161969',
+						'nrIdentifClienteDest' 				=> '00433856050',
+						'nrInscricaoEstadualDestinatario' 	=> '',
+						'vlMercadoria' 						=> $this->valor,
+						'psReal' 							=> number_format($this->peso, 3, '.', ''),
+						'tpFrete' 							=> 'C',
+						'tpPessoaRemetente' 				=> 'J',
+						'tpSituacaoTributariaRemetente' 	=> 'CO',
+						'tpPessoaDestinatario' 				=> 'F',
+						'tpSituacaoTributariaDestinatario' 	=> 'NC',
+						'tpServico' 						=> 'RNC'
+					)	
+				)
+		);
+
+		try{
+		    $client = $cliente->__soapCall($funcao, $parametros);
+		    $result = $client->out;
+
+		    $valor = 0;
+		    $prazo = 0;
+
+		    if((array)$result->errorList){
+		    	if(isset($result->errorList->string)){
+		    		if(is_array($result->errorList->string)) $erro = '<p>Erro: ' . implode('</p><p>Erro: ', $result->errorList->string) . '</p>';
+		    		else $erro = $result->errorList->string;
+
+		    		$this->logaErro("Erro na consulta TNT: " . $erro);
+		    	}
+		    }else{
+				foreach($result->parcelas->ParcelasFreteWebService as $parcela){
+					$valor += $parcela->vlParcela;
+				}
+
+				$valor -= $result->vlDesconto; //se tiver desconto, subtrai
+
+				$prazo = $result->prazoEntrega;
+
+				$cidade = $result->nmMunicipioDestino;
+
+				$retorno[] = [
+		    		'servico' => (string)'TNT',
+		    		'preco' => (float)$valor,
+		    		'prazo' => (int)$prazo,
+		    		'mensagem' => 'Frete para ' . $cidade
+		    	];
+			}
+		}catch(SoapFault $fault){
+			$this->logaErro("Erro ao conectar TNT: " . $fault->getMessage());
+		}
+
+		/*************
+		 *
+		 * WS VIPex
+		 *
+		 * Utiliza PDO para buscar
+		 * os dados localmente
+		 * 
+		 *************/
 		try {
 			$stmt = $this->bd->prepare("SELECT id_transportadora, nome_transportadora FROM logis_transportadora");
 			$stmt->execute();
@@ -183,8 +284,6 @@ class Logis
 				$base = substr($this->destino,0,3);
 				$base = (int)str_pad($base, 8, 0);
 
-				#echo "SELECT p.praca, p.nome_cidade, p.uf_cidade, p.cobra_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.praca = v.praca WHERE p.cep_inicial BETWEEN $base AND {$this->destino} AND v.limite_cubagem <= $cubagem AND p.id_transportadora = {$raw['id_transportadora']} LIMIT 1";
-				
 				//busca a praca de destino de acordo com o cep, em cada transportadora
 				$stmt = $this->bd->prepare("SELECT p.praca, p.nome_cidade, p.uf_cidade, p.cobra_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.praca = v.praca WHERE p.cep_inicial BETWEEN :a AND :c AND v.limite_cubagem <= :x AND p.id_transportadora = :t LIMIT 1");
 				$stmt->bindParam(":a", $base);

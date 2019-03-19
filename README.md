@@ -6,6 +6,8 @@ O Logis aceita inicializar através de um array, com as seguintes opções:
 
 **origem** (int) O cep de origem (empresa)
 
+**valor** (float) O valor total dos itens
+
 **peso** (float) O peso somado dos itens (em kg - correios retorna até 30kg)
 
 **itens** (int) O número total de itens, opcional
@@ -37,6 +39,7 @@ use Logis\Logis;
 $options = [
 	'destino' => '96810178',
 	'origem' => '97957000',
+    'valor' => '700.90',
 	'peso' => '20',
 	'itens' => '4',
 	'dimensoes' => [
@@ -85,6 +88,14 @@ Array
             [preco] => 37.14
             [prazo] => 3
             [mensagem] => Frete para Santa Cruz do Sul/RS
+        )
+
+    [3] => Array
+        (
+            [servico] => TNT
+            [preco] => 61.14
+            [prazo] => 4
+            [mensagem] => Frete para Santa Cruz do Sul
         )
 
 )

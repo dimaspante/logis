@@ -7,8 +7,9 @@ use Logis\Logis;
 
 //opções de inicialização
 $options = [
-	'destino' => '96810178',
+	'destino' => '86010190',
 	'origem' => '97957000',
+	'valor' => '700.90',
 	'peso' => '20',
 	'itens' => '4',
 	'dimensoes' => [
