@@ -183,7 +183,8 @@ class Logis
 		 * Utiliza SOAP 1.1
 		 * para buscar os dados
 		 * 
-		 * campo cepOrigem deve ser da própria filial da tnt, não da empresa
+		 * cepOrigem deve ser da própria filial da tnt, não da empresa
+		 * nrIdentifClienteDest pode ser um CPF default
 		 * tpFrete deve ser C ou F (C - CIF, pago à TNT pelo remetente; F - FOB, pago no destino | Padrão C)
 		 * tpServico deve ser RNC ou ANC (RNC - Rodoviario Nacional Convencional; ANC - Aéreo Nacional | Padrão RNC)
 		 * tpSituacaoTributariaRemetente normalmente CO, ME ou NC (CO - Contribuinte; ME - Microempresa; NC - Não contribuinte | Padrão CO)
@@ -211,7 +212,7 @@ class Logis
 						'cepDestino'                       => $this->destino,
 						'nrIdentifClienteRem'              => '10651777000170',
 						'nrInscricaoEstadualRemetente'     => '1080161969',
-						'nrIdentifClienteDest'             => '00433856050',
+						'nrIdentifClienteDest'             => '12345678909',
 						'nrInscricaoEstadualDestinatario'  => '',
 						'vlMercadoria'                     => $this->valor,
 						'psReal'                           => number_format($this->peso, 3, '.', ''),
