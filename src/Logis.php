@@ -74,7 +74,7 @@ class Logis
 	 * Conexão ao banco com PDO
 	 */
 	private function conectaBD(){
-		require_once 'defines.php'
+		require_once 'defines.php';
 
 		try {
 			$pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
@@ -252,7 +252,7 @@ class Logis
 				$cidade = $result->nmMunicipioDestino;
 
 				$retorno[] = [
-		    		'servico' => (string)'TNT',
+		    		'servico' => 'TNT',
 		    		'preco' => (float)$valor,
 		    		'prazo' => (int)$prazo,
 		    		'mensagem' => 'Frete para ' . $cidade
