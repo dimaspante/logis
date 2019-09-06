@@ -22,42 +22,32 @@ class Logis
 	 * Construtor da classe de logística
 	 */
 	function __construct($options = array()) {
-		$destino = (int)$options['destino'];
-		$origem = (int)$options['origem'];
-		$valor = $options['valor'];
-		$peso = $options['peso'];
-		$itens = (int)$options['itens'];
-		$dimensoes = (array)$options['dimensoes'];
-
 		if (!is_array($options)) {
 			$this->logaErro('Opções de inicialização não informadas como array.');
 		}
-		if (!$destino) {
+		if (!$options['destino']) {
 			$this->logaErro('CEP de destino não informado.');
 		}
-		if (!$origem) {
+		if (!$options['origem']) {
 			$this->logaErro('CEP de origem não informado.');
 		}
-		if (!$valor) {
+		if (!$options['valor']) {
 			$this->logaErro('Valor dos itens não informado.');
 		}
-		if (!$peso) {
+		if (!$options['peso']) {
 			$this->logaErro('Peso total não informado.');
 		}
-		if (!$dimensoes) {
-			$this->logaErro('Dimensões não informadas.');
-		}
-		if (!is_array($dimensoes) || empty($dimensoes)) {
+		if (!is_array($options['dimensoes']) || !$options['dimensoes']) {
 			$this->logaErro('Dimensões não informadas ou fora do formato array.');
 		}
 
-    	$this->destino = $destino;
-    	$this->origem = $origem;
-    	$this->valor = $valor;
-    	$this->peso = $peso;
-    	$this->itens = $itens;
-    	$this->dimensoes = $dimensoes;
-    	$this->bd = $this->conectaBD();
+  	$this->destino = (int)$options['destino'];
+  	$this->origem = (int)$options['origem'];
+  	$this->valor = $options['valor'];
+  	$this->peso = $options['peso'];
+  	$this->itens = (int)$options['itens'];
+  	$this->dimensoes = (array)$options['dimensoes'];
+  	$this->bd = $this->conectaBD();
 	}
 
 	/**
@@ -106,7 +96,7 @@ class Logis
 		$largura = str_replace(',', '.', $data['largura']);
 		$comprimento = str_replace(',', '.', $data['comprimento']);
 
-		return ['a'=>$altura,'l'=>$largura,'c'=>$comprimento];
+		return array('a'=>$altura, 'l'=>$largura, 'c'=>$comprimento);
 	}
 
 	/**
@@ -120,8 +110,15 @@ class Logis
 	public function calcularFrete() {
 		$data = $this->analisaDimensoes();
 
-		$cubagem = $data['a'] * $data['l'] * $data['c'];
-		if ($this->itens) $cubagem *= $this->itens;
+		$cubagem = $data['a'] * $data['l'] * $data['c'] * $this->itens;
+		$cubagem = number_format($cubagem, 2);
+
+		//usamos o fator de cubagem rodoviario (300kg)
+		$peso_cubado = ($cubagem * 300);
+
+		if ($peso_cubado > $this->peso) {
+			$this->peso = $peso_cubado;
+		}
 
 		$retorno = array();
 
@@ -133,7 +130,7 @@ class Logis
 		 * seja menor que 30kg, usando XML
 		 * 
 		 *************/
-		if($this->peso < 30){
+		if ($this->peso < 30) {
 			$altura 	 = ($data['a'] < 12) ? 12 : $data['a']; //o minimo é 12cm
 			$largura 	 = ($data['l'] < 12) ? 12 : $data['l']; //o minimo é 12cm
 			$comprimento = ($data['c'] < 16) ? 16 : $data['c']; //o minimo é 16cm
@@ -162,17 +159,17 @@ class Logis
 			$qry['StrRetorno'] = 'xml';
 			$qry = http_build_query($qry);
 
-		    $result = simplexml_load_file($url . '?' . $qry);
-		    
-		    foreach ($result->cServico as $srv) {
-			    if($srv->Erro == 0){
-			    	$retorno[] = [
-			    		'servico' => (string)($srv->Codigo == '40010' ? 'SEDEX' : 'PAC'),
-			    		'preco' => (float)($srv->Valor+(0.1*$srv->Valor)), //valor mais 10%
-			    		'prazo' => (int)$srv->PrazoEntrega,
-			    		'mensagem' => null
-			    	];
-			    }
+	    $result = simplexml_load_file($url . '?' . $qry);
+	    
+	    foreach ($result->cServico as $srv) {
+		    if ($srv->Erro == 0) {
+		    	$retorno[] = [
+		    		'servico' => (string)($srv->Codigo == '40010' ? 'SEDEX' : 'PAC'),
+		    		'preco' => (float)($srv->Valor+(0.1*$srv->Valor)), //valor mais 10%
+		    		'prazo' => (int)$srv->PrazoEntrega,
+		    		'mensagem' => null
+		    	];
+		    }
 			}
 		}
 
@@ -226,22 +223,25 @@ class Logis
 				)
 		);
 
-		try{
+		try {
 		    $client = $cliente->__soapCall($funcao, $parametros);
 		    $result = $client->out;
 
 		    $valor = 0;
 		    $prazo = 0;
 
-		    if((array)$result->errorList){
-		    	if(isset($result->errorList->string)){
-		    		if(is_array($result->errorList->string)) $erro = '<p>Erro: ' . implode('</p><p>Erro: ', $result->errorList->string) . '</p>';
-		    		else $erro = $result->errorList->string;
+		    if ((array)$result->errorList) {
+		    	if (isset($result->errorList->string)) {
+		    		if (is_array($result->errorList->string)) {
+		    			$erro = '<p>Erro: ' . implode('</p><p>Erro: ', $result->errorList->string) . '</p>';
+		    		} else {
+		    			$erro = $result->errorList->string;
+		    		}
 
 		    		$this->logaErro("Erro na consulta TNT: " . $erro);
 		    	}
-		    }else{
-				foreach($result->parcelas->ParcelasFreteWebService as $parcela){
+		    } else {
+				foreach ($result->parcelas->ParcelasFreteWebService as $parcela) {
 					$valor += $parcela->vlParcela;
 				}
 
@@ -258,7 +258,7 @@ class Logis
 		    		'mensagem' => 'Frete para ' . $cidade
 		    	];
 			}
-		}catch(SoapFault $fault){
+		} catch(SoapFault $fault) {
 			$this->logaErro("Erro ao conectar TNT: " . $fault->getMessage());
 		}
 
@@ -283,7 +283,7 @@ class Logis
 				$base = (int)str_pad($base, 8, 0);
 
 				//busca a praca de destino de acordo com o cep, em cada transportadora
-				$stmt = $this->bd->prepare("SELECT p.praca, p.nome_cidade, p.uf_cidade, p.cobra_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.praca = v.praca WHERE p.cep_inicial BETWEEN :a AND :c AND v.limite_cubagem <= :x AND p.id_transportadora = :t LIMIT 1");
+				$stmt = $this->bd->prepare("SELECT p.praca, p.nome_cidade, p.uf_cidade, p.cobra_adicional, p.prazo, v.valor FROM logis_praca p INNER JOIN logis_valor v ON p.praca = v.praca WHERE p.cep_inicial BETWEEN :a AND :c AND v.limite_cubagem <= :x AND p.id_transportadora = :t ORDER BY v.id_valor DESC LIMIT 1");
 				$stmt->bindParam(":a", $base);
 				$stmt->bindParam(":c", $this->destino);
 				$stmt->bindParam(":x", $cubagem);
